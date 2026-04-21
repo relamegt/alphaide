@@ -1,0 +1,41 @@
+{
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.startupEditor": "none",
+  "workbench.iconTheme": "material-icon-theme",
+  "window.title": "AlphaLearn IDE — ${folderName}",
+
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#1a1a2e",
+    "titleBar.activeForeground": "#e94560",
+    "activityBar.background": "#16213e",
+    "activityBar.foreground": "#ffffff",
+    "statusBar.background": "#e94560",
+    "statusBar.foreground": "#ffffff",
+    "sideBar.background": "#0f0f1a"
+  },
+
+  "editor.fontFamily": "'JetBrains Mono', 'Fira Code', monospace",
+  "editor.fontSize": 14,
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "terminal.integrated.fontSize": 13,
+  "explorer.confirmDelete": false,
+
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
+  "extensions.ignoreRecommendations": true,
+
+  "workbench.activityBar.visible": true,
+
+  "workbench.view.extensions.visible": false,
+
+  "liveServer.settings.port": 8181,
+  "liveServer.settings.host": "0.0.0.0",
+  "liveServer.settings.NoBrowser": true,
+  "telemetry.telemetryLevel": "off",
+  "update.mode": "none"
+}

@@ -1,0 +1,43 @@
+{
+  "name": "alpha-lms",
+  "displayName": "AlphaLearn IDE",
+  "description": "AlphaLearn assignment tools",
+  "version": "0.0.1",
+  "publisher": "alphalearn",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "icon": "resources/logo.png",
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "alpha.evaluate", "title": "AlphaLearn: Evaluate" },
+      { "command": "alpha.submit",   "title": "AlphaLearn: Submit"   },
+      { "command": "alpha.preview",  "title": "AlphaLearn: Preview"  }
+    ],
+    "viewsContainers": {
+      "activitybar": [{
+        "id": "alphalearn-panel",
+        "title": "AlphaLearn",
+        "icon": "resources/logo.png"
+      }]
+    },
+    "views": {
+      "alphalearn-panel": [{
+        "id": "alphalearn.panel",
+        "name": "Assignment",
+        "type": "webview"
+      }]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "package": "npm run compile && vsce package --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}

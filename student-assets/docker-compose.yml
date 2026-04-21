@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  alphalearnide:
+    image: DOCKERHUB_USERNAME/alphalearnide:latest
+    container_name: alphalearnide
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - "${USERPROFILE:-$HOME}/AlphaIDE/workspaces:/home/coder/workspaces"
+      - alpha-auth:/root/.alpha
+      - alpha-config:/root/.config/code-server
+    environment:
+      - ALPHA_BACKEND=https://api.alphalearn.com
+volumes:
+  alpha-auth:
+  alpha-config:

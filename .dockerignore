@@ -1,0 +1,11 @@
+node_modules
+.git
+.env
+*.log
+student-assets/
+.github/
+README.md
+.DS_Store
+alpha-extension/src
+alpha-extension/node_modules
+alpha-extension/out

@@ -1,0 +1,12 @@
+{
+  "name": "alpha-cli",
+  "version": "1.0.0",
+  "bin": { "alpha": "./index.js" },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "archiver": "^6.0.1",
+    "extract-zip": "^2.0.1",
+    "form-data": "^4.0.0",
+    "fs-extra": "^11.2.0"
+  }
+}

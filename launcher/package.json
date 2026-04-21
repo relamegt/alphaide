@@ -1,0 +1,14 @@
+{
+  "name": "testingalphaing-ide",
+  "version": "1.0.0",
+  "description": "AlphaLearn IDE Launcher",
+  "bin": {
+    "testingalphaing-ide": "./index.js"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "dependencies": {
+    "open": "^9.1.0"
+  }
+}
