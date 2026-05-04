@@ -6,7 +6,7 @@
 
 set -e
 
-DOCKER_HUB_USER="YOURDOCKERHUBUSER"
+DOCKER_HUB_USER="realmegtnoet"
 IMAGE="$DOCKER_HUB_USER/alphalearnide:latest"
 CONTAINER_NAME="alphalearn-ide"
 LAUNCHER_NAME="alphalearn-ide"

@@ -9,16 +9,19 @@ if (process.platform === 'win32') {
   // Windows — write registry keys for alphalearn:// protocol
   const regContent = `Windows Registry Editor Version 5.00
 
-[HKEY_CLASSES_ROOT\\alphalearn]
+[HKEY_CURRENT_USER\\Software\\Classes\\alphalearn]
 @="AlphaLearn IDE"
 "URL Protocol"=""
 
-[HKEY_CLASSES_ROOT\\alphalearn\\shell]
+[HKEY_CURRENT_USER\\Software\\Classes\\alphalearn\\DefaultIcon]
+@="C:\\\\Windows\\\\System32\\\\cmd.exe,0"
 
-[HKEY_CLASSES_ROOT\\alphalearn\\shell\\open]
+[HKEY_CURRENT_USER\\Software\\Classes\\alphalearn\\shell]
 
-[HKEY_CLASSES_ROOT\\alphalearn\\shell\\open\\command]
-@="\\"node\\" \\"${launcherPath.replace(/\\/g, '\\\\')}\\" \\"%1\\""
+[HKEY_CURRENT_USER\\Software\\Classes\\alphalearn\\shell\\open]
+
+[HKEY_CURRENT_USER\\Software\\Classes\\alphalearn\\shell\\open\\command]
+@="\\"%1\\""
 `;
   const regFile = path.join(os.tmpdir(), 'alphalearn-protocol.reg');
   fs.writeFileSync(regFile, regContent);

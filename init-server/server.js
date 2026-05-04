@@ -87,15 +87,27 @@ app.get('/', async (req, res) => {
       await extract(zipPath, { dir: wsPath });
       fs.removeSync(zipPath);
 
-      // Patch package.json
-      const pkgPath = path.join(wsPath, 'package.json');
-      if (fs.existsSync(pkgPath)) {
-        const pkg = fs.readJsonSync(pkgPath);
-        pkg.scripts = { ...pkg.scripts, evaluate: 'alpha evaluate', submit: 'alpha submit' };
-        fs.writeJsonSync(pkgPath, pkg, { spaces: 2 });
+      // ── Get Assignment Metadata ─────────────────────────────
+      let assignmentData = {};
+      try {
+        const metadataRes = await axios.post(`${API}/api/assignments/ide/authenticate`, { token: auth.token });
+        assignmentData = metadataRes.data;
+      } catch (err) {
+        console.warn('Failed to fetch metadata, defaulting to standard IDE:', err.message);
       }
 
-      patchViteConfig(wsPath);
+      if (assignmentData.assignmentType === 'FULLSTACK_MERN') {
+        await initMernProject(wsPath, assignmentData);
+      } else {
+        // Standard IDE project setup
+        const pkgPath = path.join(wsPath, 'package.json');
+        if (fs.existsSync(pkgPath)) {
+          const pkg = fs.readJsonSync(pkgPath);
+          pkg.scripts = { ...pkg.scripts, evaluate: 'alpha evaluate', submit: 'alpha submit' };
+          fs.writeJsonSync(pkgPath, pkg, { spaces: 2 });
+        }
+        patchViteConfig(wsPath);
+      }
 
       fs.writeJsonSync(path.join(wsPath, '.alpharc'), {
         assignmentId, token: auth.token,
@@ -118,8 +130,66 @@ app.get('/', async (req, res) => {
   return res.redirect(302, `/?folder=${encodeURIComponent(wsPath)}`);
 });
 
+// ── MERN Initialization ─────────────────────────────────────
+async function initMernProject(wsPath, data) {
+  const { serviceStructure, defaultPorts } = data;
+  const clientDir = serviceStructure?.frontendDir || 'client';
+  const serverDir = serviceStructure?.backendDir || 'server';
+  const clientPath = path.join(wsPath, clientDir);
+  const serverPath = path.join(wsPath, serverDir);
+
+  console.log(`Initializing MERN project: client=${clientDir}, server=${serverDir}`);
+
+  // 1. Patch Server package.json & .env
+  if (fs.existsSync(serverPath)) {
+    const sPkgPath = path.join(serverPath, 'package.json');
+    if (fs.existsSync(sPkgPath)) {
+      const pkg = fs.readJsonSync(sPkgPath);
+      pkg.scripts = { ...pkg.scripts, start: 'node index.js', dev: 'nodemon index.js' };
+      fs.writeJsonSync(sPkgPath, pkg, { spaces: 2 });
+    }
+    
+    // Create .env for server
+    const envContent = `PORT=${defaultPorts?.backend || 5000}\nMONGODB_URI=mongodb://localhost:27017/alphalearn\nNODE_ENV=development\n`;
+    fs.writeFileSync(path.join(serverPath, '.env'), envContent);
+    console.log('Server .env created');
+  }
+
+  // 2. Patch Client package.json & vite.config
+  if (fs.existsSync(clientPath)) {
+    const cPkgPath = path.join(clientPath, 'package.json');
+    if (fs.existsSync(cPkgPath)) {
+      const pkg = fs.readJsonSync(cPkgPath);
+      pkg.scripts = { ...pkg.scripts, evaluate: 'alpha evaluate', submit: 'alpha submit' };
+      fs.writeJsonSync(cPkgPath, pkg, { spaces: 2 });
+    }
+    patchViteConfig(clientPath, defaultPorts?.frontend || 5173);
+  }
+
+  // 3. Root Level scripts
+  const rootPkgPath = path.join(wsPath, 'package.json');
+  const rootPkg = fs.existsSync(rootPkgPath) ? fs.readJsonSync(rootPkgPath) : { name: "mern-project", version: "1.0.0" };
+  rootPkg.scripts = {
+    ...rootPkg.scripts,
+    "install:all": `npm install && cd ${clientDir} && npm install && cd ../${serverDir} && npm install`,
+    "dev": `concurrently \"cd ${serverDir} && npm run dev\" \"cd ${clientDir} && npm run dev\"`,
+    "evaluate": "alpha evaluate",
+    "submit": "alpha submit"
+  };
+  fs.writeJsonSync(rootPkgPath, rootPkg, { spaces: 2 });
+
+  // 4. README Guidance
+  const readmePath = path.join(wsPath, 'README.md');
+  const guidance = `\n\n## 🅐 AlphaLearn MERN Setup\nTo start both services, run:\n\`\`\`bash\nnpm run install:all\nnpm run dev\n\`\`\`\nBackend: http://localhost:${defaultPorts?.backend || 5000}\nFrontend: http://localhost:${defaultPorts?.frontend || 5173}\n`;
+  if (fs.existsSync(readmePath)) {
+    fs.appendFileSync(readmePath, guidance);
+  } else {
+    fs.writeFileSync(readmePath, `# MERN Assignment\n${guidance}`);
+  }
+}
+
 // ── Vite config patcher ────────────────────────────────────
-function patchViteConfig(wsPath) {
+function patchViteConfig(wsPath, port = 5173) {
   const configs = ['vite.config.js', 'vite.config.ts', 'vite.config.mjs'];
   for (const cf of configs) {
     const cfPath = path.join(wsPath, cf);
@@ -131,7 +201,7 @@ function patchViteConfig(wsPath) {
   // __alpha_start
   server: {
     host: '0.0.0.0',
-    port: 5173,
+    port: ${port},
     strictPort: false,
     allowedHosts: 'all',
     hmr: { host: 'localhost', clientPort: 3001 },
@@ -162,7 +232,7 @@ function patchViteConfig(wsPath) {
     `\nexport default defineConfig({\n` +
     (hasReact ? `  plugins: [react()],\n` : '') +
     `  // __alpha_start\n` +
-    `  server: {\n    host: '0.0.0.0',\n    port: 5173,\n    strictPort: false,\n` +
+    `  server: {\n    host: '0.0.0.0',\n    port: ${port},\n    strictPort: false,\n` +
     `    allowedHosts: 'all',\n    hmr: { host: 'localhost', clientPort: 3001 },\n  },\n` +
     `  // __alpha_end\n})\n`
   );

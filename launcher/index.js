@@ -8,8 +8,15 @@ const IMAGE          = 'realmegtnoet/alphalearnide:latest';
 const CONTAINER_NAME = 'alphalearn-ide';
 
 // Parse args: alphalearn-ide [assignmentId] [token]
-const assignmentId = process.argv[2] || '';
-const token        = process.argv[3] || '';
+let assignmentId = process.argv[2] || '';
+let token        = process.argv[3] || '';
+
+// Handle protocol URL (alphalearn://[id]?token=[token])
+if (assignmentId.startsWith('alphalearn://')) {
+  const urlObj = new URL(assignmentId.replace('alphalearn://', 'http://localhost/'));
+  assignmentId = urlObj.pathname.split('/').filter(Boolean)[0] || '';
+  token        = urlObj.searchParams.get('token') || token;
+}
 
 async function isPortOpen(port) {
   return new Promise(resolve => {
